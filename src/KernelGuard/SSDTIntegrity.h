@@ -1,11 +1,14 @@
 #pragma once
 #include <ntddk.h>
 
-// Phase 1: scaffolding only. KgSsdtIntegrityBaseline() is called once at
-// monitor startup and is meant to snapshot every KeServiceDescriptorTable
-// entry address; KgSsdtIntegrityCheck() is called on each monitor tick and
-// is meant to re-walk the table and diff against that snapshot, raising
-// KG_LOG_ALERT on any mismatch (the signature of SSDTHook.c in
-// Kernelious-Rootkit). Both are no-ops that just log until Phase 2.
+// Locates nt!KeServiceDescriptorTable, snapshots every service-table entry
+// address, and caches the table location so KgSsdtIntegrityCheck() doesn't
+// have to re-scan ntoskrnl on every tick. Called once at monitor startup.
+// Logs KG_LOG_ALERT (instead of crashing) if the table can't be located on
+// this Windows build.
 VOID KgSsdtIntegrityBaseline(VOID);
+
+// Re-reads the cached table and raises KG_LOG_ALERT on any entry whose
+// resolved address no longer matches the baseline (the signature of
+// SSDTHook.c in Kernelious-Rootkit). No-op if the baseline capture failed.
 VOID KgSsdtIntegrityCheck(VOID);

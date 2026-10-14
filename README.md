@@ -16,7 +16,7 @@ demonstrated by Kernelious-Rootkit:
 |---|---|
 | SSDT hooking (`SSDTHook.c`) | SSDT entry-address baseline + periodic diff |
 | IDT hooking (`IDTHook.c`) | IDT gate-descriptor baseline + periodic diff |
-| SYSENTER/MSR hooking (`SYSENTERHook.c`) | `IA32_SYSENTER_EIP` MSR baseline + periodic diff |
+| SYSENTER/MSR hooking (`SYSENTERHook.c`) | `IA32_LSTAR` MSR baseline + periodic diff |
 | EPROCESS list unlinking (`Process.c`) | Cross-reference `PsGetNextProcess` walk vs. a raw linked-list walk / handle table enumeration |
 | Page-table manipulation (`PagetableHook.c`) | PTE protection-bit / `CR3` sanity checks around `.text` sections |
 
@@ -70,27 +70,32 @@ Kernelious-Rootkit workflow.
 
 ## Phase Plan
 
-- **Phase 1 (this commit) — Scaffolding.** Driver skeleton, project/build
-  files, periodic monitor worker thread, and stub integrity-check modules
-  that log "not yet implemented" so the framework is provably wired up
-  end-to-end before any detection logic is written.
-- **Phase 2 — SSDT & IDT baseline integrity.** Snapshot `KeServiceDescriptorTable`
-  entries and the IDT at `DriverEntry`, re-check on a timer, raise an alert
-  (`DbgPrint` + an event log entry) on mismatch.
+- **Phase 1 (done) — Scaffolding.** Driver skeleton, project/build files,
+  periodic monitor worker thread, and stub integrity-check modules that log
+  "not yet implemented" so the framework is provably wired up end-to-end
+  before any detection logic is written.
+- **Phase 2 (this commit) — SSDT & IDT/MSR baseline integrity.** Locates
+  `nt!KeServiceDescriptorTable` via the same pattern-scan technique
+  `SSDTHook.c` uses to hook it (bounded and `MmIsAddressValid`/SEH-guarded
+  here, rather than crashing on an unsupported build), snapshots every SSDT
+  entry, the full IDT (CPU 0 only — see the limitation note in
+  `IDTIntegrity.c`), and `IA32_LSTAR`. Re-checks on each monitor tick and
+  raises `KG_LOG_ALERT` (`DbgPrint` only for now) on any mismatch.
 - **Phase 3 — Process-list cross-validation.** Walk `PsGetNextProcess` and
   compare against a secondary enumeration path (e.g. handle table / thread
   list cross-reference) to catch EPROCESS unlinking.
 - **Phase 4 — Reporting surface.** IOCTL interface + a minimal usermode
-  client to pull alert history out of the driver for demo purposes.
+  client to pull alert history out of the driver for demo purposes. Also
+  where the event-log alert path (beyond `DbgPrint`) lands.
 
 ## Repository Notes
 
 - No prebuilt driver binaries are included — build on Windows with the WDK.
 - `Driver.c` registers `DriverEntry` and `DriverUnload` and starts/stops the
   periodic monitor worker (`Monitor.c`).
-- Each integrity-check module (`SSDTIntegrity.c`, `IDTIntegrity.c`,
-  `ProcessIntegrity.c`) currently only logs that it ran — the actual
-  baseline-capture and diff logic lands in Phase 2/3.
+- `SSDTIntegrity.c` and `IDTIntegrity.c` implement real baseline-capture and
+  diff logic (Phase 2). `ProcessIntegrity.c` is still a Phase 1 stub pending
+  Phase 3.
 
 ## License
 

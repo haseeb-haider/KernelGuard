@@ -1,11 +1,11 @@
 #pragma once
 #include <ntddk.h>
 
-// Phase 1: scaffolding only. Mirrors SSDTIntegrity.h but for IDT gate
-// descriptors (the target of IDTHook.c in Kernelious-Rootkit). Phase 2
-// should snapshot each gate's offset/selector via SIDT + per-core reads,
-// and Phase 3+ should also cover the IA32_SYSENTER_EIP MSR path targeted
-// by SYSENTERHook.c, since both land in the same "control-transfer
-// integrity" bucket.
+// Snapshots every IDT gate's ISR address plus IA32_LSTAR (the x64 SYSCALL
+// entry-point MSR targeted by SYSENTERHook.c in Kernelious-Rootkit) on CPU 0.
+// Called once at monitor startup.
 VOID KgIdtIntegrityBaseline(VOID);
+
+// Re-reads the same IDT/MSR state on CPU 0 and raises KG_LOG_ALERT on any
+// entry that no longer matches the baseline. Called on each monitor tick.
 VOID KgIdtIntegrityCheck(VOID);
