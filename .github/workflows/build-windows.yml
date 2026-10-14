@@ -44,7 +44,7 @@ jobs:
           }
 
       - name: Build KernelGuard solution
-        run: msbuild src\KernelGuard.sln /p:Configuration=Release /p:Platform=x64 /m
+        run: msbuild src\KernelGuard.sln /p:Configuration=Release /p:Platform=x64 /p:RunCodeAnalysis=true /m
 
       - name: Verify .sys output
         run: |

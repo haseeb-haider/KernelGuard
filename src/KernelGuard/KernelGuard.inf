@@ -8,7 +8,7 @@ Class=System
 ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318}
 Provider=%ManufacturerName%
 CatalogFile=KernelGuard.cat
-DriverVer= ; TODO: set DriverVer in stampinf property pages
+DriverVer=10/14/2026,1.0.0.0
 PnpLockdown=1
 
 [DestinationDirs]
@@ -30,7 +30,7 @@ WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with
 %ManufacturerName%=Standard,NT$ARCH$
 
 [Standard.NT$ARCH$]
-%KernelGuard.DeviceDesc%=KernelGuard_Device, Root\KernelGuard ; TODO: edit hw-id
+%KernelGuard.DeviceDesc%=KernelGuard_Device, Root\KernelGuard
 
 [KernelGuard_Device.NT]
 CopyFiles=Drivers_Dir
@@ -71,7 +71,7 @@ KmdfLibraryVersion = $KMDFVERSION$
 
 [Strings]
 SPSVCINST_ASSOCSERVICE= 0x00000002
-ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+ManufacturerName="Haseeb Haider"
 DiskName = "KernelGuard Installation Disk"
 KernelGuard.DeviceDesc = "KernelGuard Device"
 KernelGuard.SVCDESC = "KernelGuard Service"

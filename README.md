@@ -29,6 +29,20 @@ demonstrated by Kernelious-Rootkit:
 - Building and testing requires a Windows development environment and the
   Windows Driver Kit (WDK).
 
+## Loading the Driver (Test Signing)
+
+This driver is not WHQL/attestation signed, so a stock Windows machine will
+refuse to load it. On a test VM (never production):
+
+```powershell
+bcdedit /set testsigning on
+# reboot
+sc create KernelGuard type= kernel binPath= "C:\path\to\KernelGuard.sys"
+sc start KernelGuard
+```
+
+Revert with `bcdedit /set testsigning off` and a reboot when you're done.
+
 ## Build Instructions
 
 Same pipeline as Kernelious-Rootkit:
@@ -77,3 +91,7 @@ Kernelious-Rootkit workflow.
 - Each integrity-check module (`SSDTIntegrity.c`, `IDTIntegrity.c`,
   `ProcessIntegrity.c`) currently only logs that it ran — the actual
   baseline-capture and diff logic lands in Phase 2/3.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
