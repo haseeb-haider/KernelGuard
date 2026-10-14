@@ -9,8 +9,8 @@ periodically re-checks them for unauthorized modification.
 
 ## Research context
 
-This is a PhD research project. The goal is to build a detector that can
-identify the class of attacks demonstrated by Kernelious-Rootkit:
+The goal is to build a detector that can identify the class of attacks
+demonstrated by Kernelious-Rootkit:
 
 | Attack technique (Kernelious-Rootkit) | Detection target (KernelGuard) |
 |---|---|
@@ -67,8 +67,7 @@ Kernelious-Rootkit workflow.
   compare against a secondary enumeration path (e.g. handle table / thread
   list cross-reference) to catch EPROCESS unlinking.
 - **Phase 4 — Reporting surface.** IOCTL interface + a minimal usermode
-  client to pull alert history out of the driver for the thesis write-up /
-  demo.
+  client to pull alert history out of the driver for demo purposes.
 
 ## Repository Notes
 
