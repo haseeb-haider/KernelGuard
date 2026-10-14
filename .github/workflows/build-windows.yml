@@ -24,6 +24,15 @@ jobs:
       - name: Restore WDK/SDK NuGet packages
         run: nuget restore .\packages.config -PackagesDirectory .\packages\
 
+      - name: Locate stampinf.exe (diagnostic)
+        run: |
+          Write-Host "--- in restored NuGet packages ---"
+          Get-ChildItem -Path .\packages -Recurse -Filter 'stampinf.exe' -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
+          Write-Host "--- anywhere under Program Files (x86)\Windows Kits ---"
+          Get-ChildItem -Path 'C:\Program Files (x86)\Windows Kits' -Recurse -Filter 'stampinf.exe' -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
+          Write-Host "--- anywhere under Program Files\Windows Kits ---"
+          Get-ChildItem -Path 'C:\Program Files\Windows Kits' -Recurse -Filter 'stampinf.exe' -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
+
       - name: Build KernelGuard solution
         run: msbuild src\KernelGuard.sln /p:Configuration=Release /p:Platform=x64 /p:RunCodeAnalysis=true /m
 
