@@ -50,7 +50,10 @@ jobs:
 
       - name: Verify .sys output
         run: |
-          $outputRoot = 'src\KernelGuard'
+          # The WDK NuGet props place output under src\<Platform>\<Config>\
+          # rather than the project's own $(ProjectDir)x64\Release\, so
+          # search the whole src tree instead of hardcoding one path.
+          $outputRoot = 'src'
           $files = Get-ChildItem -Path $outputRoot -Recurse -Filter '*.sys' -ErrorAction SilentlyContinue
           if (-not $files) {
             Write-Error "No .sys files found under $outputRoot"
