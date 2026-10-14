@@ -1,0 +1,58 @@
+name: Windows Kernel Driver Build
+
+on:
+  push:
+    branches: [ main, everthing ]
+  pull_request:
+    branches: [ main, everthing ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check MSBuild
+        run: |
+          Get-Command msbuild.exe
+          msbuild /version
+
+      - name: Check for WDK headers
+        run: |
+          $wdkRoots = @(
+            'C:\Program Files (x86)\Windows Kits\10',
+            'C:\Program Files\Windows Kits\10',
+            'C:\Program Files (x86)\Windows Kits\8.1',
+            'C:\Program Files\Windows Kits\8.1'
+          )
+          $found = $false
+          foreach ($root in $wdkRoots) {
+            if (Test-Path $root) {
+              Write-Host "Found Windows Kits root: $root"
+              $hdrs = Get-ChildItem -Path $root -Recurse -Include wdm.h, ntddk.h, ntimage.h -ErrorAction SilentlyContinue
+              if ($hdrs) {
+                Write-Host "WDK headers found under: $root"
+                $found = $true
+                break
+              }
+            }
+          }
+          if (-not $found) {
+            Write-Error 'WDK headers not found. Install the Windows Driver Kit on the runner or use a local Windows machine with WDK.'
+            exit 1
+          }
+
+      - name: Build KernelGuard solution
+        run: msbuild src\KernelGuard.sln /p:Configuration=Release /p:Platform=x64 /m
+
+      - name: Verify .sys output
+        run: |
+          $outputRoot = 'src\KernelGuard'
+          $files = Get-ChildItem -Path $outputRoot -Recurse -Filter '*.sys' -ErrorAction SilentlyContinue
+          if (-not $files) {
+            Write-Error "No .sys files found under $outputRoot"
+            exit 1
+          }
+          Write-Host 'Found .sys file(s):'
+          $files | ForEach-Object { Write-Host "  $($_.FullName)" }

@@ -1,0 +1,77 @@
+;
+; KernelGuard.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System
+ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318}
+Provider=%ManufacturerName%
+CatalogFile=KernelGuard.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+PnpLockdown=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+KernelGuard_Device_CoInstaller_CopyFiles = 11
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+KernelGuard.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%KernelGuard.DeviceDesc%=KernelGuard_Device, Root\KernelGuard ; TODO: edit hw-id
+
+[KernelGuard_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+KernelGuard.sys
+
+;-------------- Service installation
+[KernelGuard_Device.NT.Services]
+AddService = KernelGuard,%SPSVCINST_ASSOCSERVICE%, KernelGuard_Service_Inst
+
+; -------------- KernelGuard driver install sections
+[KernelGuard_Service_Inst]
+DisplayName    = %KernelGuard.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\KernelGuard.sys
+
+;
+;--- KernelGuard_Device Coinstaller installation ------
+;
+
+[KernelGuard_Device.NT.CoInstallers]
+AddReg=KernelGuard_Device_CoInstaller_AddReg
+CopyFiles=KernelGuard_Device_CoInstaller_CopyFiles
+
+[KernelGuard_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[KernelGuard_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[KernelGuard_Device.NT.Wdf]
+KmdfService =  KernelGuard, KernelGuard_wdfsect
+[KernelGuard_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+DiskName = "KernelGuard Installation Disk"
+KernelGuard.DeviceDesc = "KernelGuard Device"
+KernelGuard.SVCDESC = "KernelGuard Service"
