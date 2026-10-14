@@ -1,5 +1,7 @@
 # KernelGuard — Kernel Object Integrity Monitor
 
+[![Windows Kernel Driver Build](https://github.com/haseeb-haider/KernelGuard/actions/workflows/build-windows.yml/badge.svg)](https://github.com/haseeb-haider/KernelGuard/actions/workflows/build-windows.yml)
+
 A Windows kernel driver that detects Direct Kernel Object Manipulation (DKOM)
 in real time — the defensive mirror of the techniques implemented in
 [Kernelious-Rootkit](../Kernelious-Rootkit-main). Where that project hooks and
