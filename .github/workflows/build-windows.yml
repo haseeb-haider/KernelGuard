@@ -24,14 +24,17 @@ jobs:
       - name: Restore WDK/SDK NuGet packages
         run: nuget restore .\packages.config -PackagesDirectory .\packages\
 
-      - name: Locate stampinf.exe (diagnostic)
+      - name: Add WDK tools (stampinf, inf2cat, ...) to PATH
         run: |
-          Write-Host "--- in restored NuGet packages ---"
-          Get-ChildItem -Path .\packages -Recurse -Filter 'stampinf.exe' -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
-          Write-Host "--- anywhere under Program Files (x86)\Windows Kits ---"
-          Get-ChildItem -Path 'C:\Program Files (x86)\Windows Kits' -Recurse -Filter 'stampinf.exe' -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
-          Write-Host "--- anywhere under Program Files\Windows Kits ---"
-          Get-ChildItem -Path 'C:\Program Files\Windows Kits' -Recurse -Filter 'stampinf.exe' -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
+          # The WDK NuGet package ships its command-line tools under
+          # packages\Microsoft.Windows.WDK.x64.<version>\c\bin\<version>\x64\
+          # but doesn't add them to PATH the way a full WDK install would -
+          # the Driver build customization (StampInf, Inf2Cat) resolves them
+          # via PATH lookup, so without this the build fails with
+          # "TRK0005: Failed to locate: stampinf.exe".
+          $wdkBin = Get-ChildItem -Path '.\packages\Microsoft.Windows.WDK.x64.*\c\bin\*\x64' -Directory -ErrorAction Stop | Select-Object -First 1 -ExpandProperty FullName
+          Write-Host "Adding to PATH: $wdkBin"
+          Add-Content -Path $env:GITHUB_PATH -Value $wdkBin
 
       - name: Build KernelGuard solution
         run: msbuild src\KernelGuard.sln /p:Configuration=Release /p:Platform=x64 /p:RunCodeAnalysis=true /m
