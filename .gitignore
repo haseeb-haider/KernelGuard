@@ -25,3 +25,6 @@ UpgradeLog.htm
 *.map
 *.tlog
 *.log
+
+# WDK/SDK NuGet packages restored by CI (see packages.config)
+packages/

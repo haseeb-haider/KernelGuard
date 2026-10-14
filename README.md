@@ -64,9 +64,11 @@ Build output:
 
 ## GitHub Actions
 
-`.github/workflows/build-windows.yml` checks for MSBuild and WDK headers,
-builds the solution, and verifies the `.sys` output — same shape as the
-Kernelious-Rootkit workflow.
+`.github/workflows/build-windows.yml` runs on `windows-2025-vs2026`, restores
+the WDK/SDK from the `Microsoft.Windows.WDK.x64` NuGet packages (see
+`packages.config` / `Directory.Build.props` at the repo root — standalone WDK
+install is deprecated on Windows Server 2025 runners), builds the solution,
+and verifies the `.sys` output.
 
 ## Phase Plan
 

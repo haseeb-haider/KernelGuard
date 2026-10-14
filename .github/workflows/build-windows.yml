@@ -8,40 +8,21 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    # windows-latest/windows-2022 don't ship the WDK, and standalone WDK
+    # install is deprecated as of Windows Server 2025 — the WDK/SDK now come
+    # from the NuGet packages restored below (see packages.config /
+    # Directory.Build.props), following Microsoft's own documented pattern
+    # for building driver samples on GitHub Actions.
+    runs-on: windows-2025-vs2026
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check MSBuild
-        run: |
-          Get-Command msbuild.exe
-          msbuild /version
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v3
 
-      - name: Check for WDK headers
-        run: |
-          $wdkRoots = @(
-            'C:\Program Files (x86)\Windows Kits\10',
-            'C:\Program Files\Windows Kits\10',
-            'C:\Program Files (x86)\Windows Kits\8.1',
-            'C:\Program Files\Windows Kits\8.1'
-          )
-          $found = $false
-          foreach ($root in $wdkRoots) {
-            if (Test-Path $root) {
-              Write-Host "Found Windows Kits root: $root"
-              $hdrs = Get-ChildItem -Path $root -Recurse -Include wdm.h, ntddk.h, ntimage.h -ErrorAction SilentlyContinue
-              if ($hdrs) {
-                Write-Host "WDK headers found under: $root"
-                $found = $true
-                break
-              }
-            }
-          }
-          if (-not $found) {
-            Write-Error 'WDK headers not found. Install the Windows Driver Kit on the runner or use a local Windows machine with WDK.'
-            exit 1
-          }
+      - name: Restore WDK/SDK NuGet packages
+        run: nuget restore .\packages.config -PackagesDirectory .\packages\
 
       - name: Build KernelGuard solution
         run: msbuild src\KernelGuard.sln /p:Configuration=Release /p:Platform=x64 /p:RunCodeAnalysis=true /m
